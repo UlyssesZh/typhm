@@ -11,8 +11,12 @@ Beatmap.prototype.load = async function () {
 	head = Object.fromEntries(head.split('\n').map(s => s.split(': ')).filter(a => a.length === 2));
 	data = data.split('\n').map(s => s.split(' '));
 	this.title = head.title || '';
+	this.musicAuthor = head.musicAuthor || '';
+	this.beatmapAuthor = head.beatmapAuthor || '';
+	this.difficulty = head.difficulty || '';
 	this.start = head.start ? parseFloat(head.start) : 0.0;
 	this.end = head.end ? parseFloat(head.end) : null;
+	this.length = this.end ? this.end - this.start : 'unknown ';
 	this.volume = head.volume ? parseFloat(head.volume) : 1.0;
 	this.audioUrl = head.audioUrl;
 	this.eventsCount = data.length - 2;
