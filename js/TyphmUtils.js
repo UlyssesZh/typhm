@@ -22,3 +22,10 @@ TyphmUtils.getRgbFromHue = function (hue) {
 		return `#ff00${this.getHexFromRatio(6-m)}`;
 	}
 }
+
+TyphmUtils.parseKey = function (key) {
+	if (TyphmConstants.KEYS.has(key))
+		return key;
+	else if (TyphmConstants.ESCAPES[key])
+		return TyphmConstants.ESCAPES[key];
+}

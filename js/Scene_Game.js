@@ -1,9 +1,3 @@
-const keys = new Set();
-const keysArray = [...'`1234567890-=qwertyuiop[]\\asdfghjkl;\'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?'.split(''), '\\b', '\\n', '\\s'];
-for (let i = 0; i < keysArray.length; i++)
-	keys.add(keysArray[i]);
-const escapes = {Backspace: '\\b', Enter: '\\n', ' ': '\\s'};
-
 function Scene_Game() {
 	this.initialize.apply(this, arguments);
 }
@@ -31,19 +25,18 @@ Scene_Game.prototype.start = function () {
 	this._pauseButton.visible = false;
 	this.addChild(this._pauseButton);
 
-	this._back = new Button(new Bitmap(100, 40), () => { window.scene = new Scene_Title(); });
-	this._back.bitmap.drawText('Back', 0, 0, 100, 40, 'center');
+	this._back = new Button(new Bitmap(128, 40), () => { this._shouldBack = true; });
+	this._back.bitmap.drawText('Back (B)', 0, 0, 128, 40, 'center');
 	this._back.x = 30;
 	this.addChild(this._back);
 
-	this._restart = new Button(new Bitmap(100, 40),
-				() => { window.scene = new Scene_Game(this._musicUrl, this._scoreUrl); });
-	this._restart.bitmap.drawText('Restart', 0, 0, 100, 40, 'center');
-	this._restart.x = 130;
+	this._restart = new Button(new Bitmap(128, 40), () => { this._shouldRestart = true });
+	this._restart.bitmap.drawText('Restart (R)', 0, 0, 128, 40, 'center');
+	this._restart.x = 30+128;
 	this.addChild(this._restart);
 
-	this._title = new Sprite(new Bitmap(Graphics.width - (32+100+100+64), 40));
-	this._title.x = 32+100+100;
+	this._title = new Sprite(new Bitmap(Graphics.width - (32+128+128+64), 40));
+	this._title.x = 32+128+128;
 	this.addChild(this._title);
 
 	this._setButtonsVisible(false);
@@ -64,9 +57,6 @@ Scene_Game.prototype.start = function () {
 	this._line2.anchor.y = 0.5;
 	this._center(this._line2, Graphics.height * 3/4);
 	this.addChild(this._line2);
-
-	this._lines = [new Bitmap(1024, 512)];
-	this._line1.bitmap = this._lines[0];
 
 	this._judgingLine = new Sprite(new Bitmap(1, 256));
 	this._judgingLine.bitmap.fillAll('gray');
@@ -122,14 +112,13 @@ Scene_Game.prototype.start = function () {
 	this._inaccuracyBoundaryRight.y = this._inaccuracyBar.y;
 	this.addChild(this._inaccuracyBoundaryRight);
 
-	this._beatmap = [];
-	this._objectsCount = 0;
+	this._beatmap = new Beatmap(this._scoreUrl);
 
 	this._hasMusic = !!this._musicUrl;
 	this._ended = false;
 
-	this._millisecondsPerPixel = 10.0;
-	this._setInaccuracyTolerance(200.0);
+	this._millisecondsPerPixel = TyphmConstants.DEFAULT_MILLISECONDS_PER_PIXEL;
+	this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
 
 	this._score = 0;
 	this._combo = 0;
@@ -149,10 +138,12 @@ Scene_Game.prototype.start = function () {
 		this._audioPlayer.addStopListener(this._onStop.bind(this));
 	} else
 		this._onLoad();
+
+	this._shouldRestart = false;
+	this._shouldBack = false;
 }
 
 Scene_Game.prototype.update = function () {
-	Scene_Base.prototype.update.call(this);
 	if (!this._paused && !this._ended) {
 		const now = this._now();
 		this._judgingLine.x = this._getXFromTime(now);
@@ -164,10 +155,9 @@ Scene_Game.prototype.update = function () {
 				break;
 			if (now < event.time)
 				break;
-			const key = this._parseKey(event.event);
-			if (key) {
+			if (event.key) {
 				if (now >= event.time + this._inaccuracyTolerance) {
-					this._clearObject(event, 'gray');
+					this._beatmap.clearObject(event, 'gray');
 					this._combo = 0;
 					this._updateCombo();
 					this._unclearedEvents.splice(i, 1);
@@ -188,7 +178,7 @@ Scene_Game.prototype.update = function () {
 				this._line1Index = this._line2Index;
 				this._line2Index = t;
 				this._line2Index += 2;
-				this._line2.bitmap = this._lines[this._line2Index];
+				this._line2.bitmap = this._beatmap.lines[this._line2Index];
 				this._lastX = 16;
 				this._lastTime = event.time;
 			} else if (eventName === 'inaccuracyTolerance') {
@@ -196,9 +186,21 @@ Scene_Game.prototype.update = function () {
 			}
 			this._unclearedEvents.splice(i, 1);
 		}
-		if (!this._hasMusic && this._unclearedEvents.length == 0)
-			this._finish();
+		if (this._hasMusic) {
+			if (this._beatmap.end && now >= this._beatmap.end)
+				this._finish();
+		} else {
+			if (this._unclearedEvents.length === 0)
+				this._finish();
+		}
 	}
+	if (this._shouldRestart) {
+		window.scene = new Scene_Game(this._musicUrl, this._scoreUrl);
+	}
+	if (this._shouldBack) {
+		window.scene = new Scene_Title();
+	}
+	Scene_Base.prototype.update.call(this);
 }
 
 Scene_Game.prototype.stop = function () {
@@ -206,54 +208,30 @@ Scene_Game.prototype.stop = function () {
 }
 
 Scene_Game.prototype._onLoad = async function () {
-	let [head, data] = (await fetch(this._scoreUrl).then(r => r.text())).split('---');
-	head = Object.fromEntries(head.split('\n').map(s => s.split(': ')).filter(a => a.length === 2));
-	data = data.split('\n').map(s => s.split(' '));
-	this._title.bitmap.drawText(head.title, 0, 0, this._title.width, 40, 'center');
-	const eventsCount = data.length - 2;
-	for (let i = 1; i <= eventsCount; i++)
-		this._beatmap.push({
-			time: parseFloat(data[i][0]),
-			event: data[i][1],
-			parameter: parseFloat(data[i][2])
-		});
-	this._beatmap.sort((event1, event2) => event1.time - event2.time);
-	let lineno = 0;
-	let lastTime = 0.0;
-	let lastX = 16;
-	let now = 0.0;
-	let millisecondsPerPixel = 10.0;
-	for (let i = 0; i < eventsCount; i++) {
-		const event = this._beatmap[i].event.trim();
-		this._beatmap[i].lineno = lineno;
-		now = this._beatmap[i].time;
-		const key = this._parseKey(event);
-		if (key) {
-			const x = lastX + (now - lastTime) / millisecondsPerPixel;
-			const y = this._beatmap[i].parameter;
-			this._beatmap[i].x = x;
-			this._drawObject(key, x, y, this._lines[lineno]);
-			this._objectsCount++;
-		} else if (event === 'millisecondsPerPixel') {
-			lastX += (now - lastTime) / millisecondsPerPixel;
-			lastTime = now;
-			millisecondsPerPixel = this._beatmap[i].parameter;
-		} else if (event === 'newLine') {
-			lineno++;
-			this._lines.push(new Bitmap(1024, 512));
-			lastTime = now;
-			lastX = 16;
-		}
+	await this._beatmap.load();
+	this._beatmap.drawLines();
+	if (!this._hasMusic && this._beatmap.audioUrl) {
+		this._hasMusic = true;
+		this._musicUrl = this._beatmap.audioUrl;
 	}
-	if (this._lines.length > 1)
-		this._line2.bitmap = this._lines[1];
+	this._lastPos = this._beatmap.start;
+	this._title.bitmap.drawText(this._beatmap.title, 0, 0, this._title.width, 40, 'center');
 	this._updateScore();
 	this._updateCombo();
-	this._unclearedEvents = [...this._beatmap];
-	this._pauseButton.visible = true;
-	this._loading.visible = false;
-	this._judgingLine.visible = true;
-	this._resume();
+	this._unclearedEvents = [...this._beatmap.events];
+	if (this._hasMusic) {
+		this._audioPlayer = new WebAudio(this._musicUrl);
+		this._audioPlayer.addLoadListener(() => {
+			this._audioPlayer.volume = this._beatmap.volume;
+			this._pauseButton.visible = true;
+			this._loading.visible = false;
+			this._judgingLine.visible = true;
+			this._line1.bitmap = this._beatmap.lines[this._line1Index];
+			this._line2.bitmap = this._beatmap.lines[this._line2Index];
+			this._resume();
+		});
+		this._audioPlayer.addStopListener(this._onStop.bind(this));
+	}
 }
 
 Scene_Game.prototype._onStop = function () {
@@ -287,22 +265,17 @@ Scene_Game.prototype._resume = function () {
 	}
 }
 
-Scene_Game.prototype._drawObject = function (key, x, y, line) {
-	line.drawText(key, x-16, -y+256-16, 32, 32, 'center');
-}
-
-Scene_Game.prototype._parseKey = function (event) {
-	if (keys.has(event))
-		return event;
-	else if (escapes[event])
-		return escapes[event];
-}
-
 Scene_Game.prototype._onKeydown = function (event) {
 	if (event.key ==='Escape') {
 		this._pause();
-	} else if (!this._paused) {
-		const key = this._parseKey(event.key);
+	} else if (this._paused) {
+		if (event.key === 'r') {
+			this._shouldRestart = true;
+		} else if (event.key === 'b') {
+			this._shouldBack = true;
+		}
+	} else {
+		const key = TyphmUtils.parseKey(event.key);
 		if (key && !this._ended) {
 			let match = false;
 			for (let i = 0; i < this._unclearedEvents.length; i++) {
@@ -312,7 +285,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 					break;
 				else if (key === event.event) {
 					inaccuracy = 2*Math.PI*(now-event.time)/this._inaccuracyTolerance;
-					this._clearObject(event, TyphmUtils.getRgbFromHue(inaccuracy));
+					this._beatmap.clearObject(event, TyphmUtils.getRgbFromHue(inaccuracy));
 					this._unclearedEvents.splice(i, 1);
 					this._score += Math.round(1000*(Math.cos(inaccuracy)+1));
 					this._updateScore();
@@ -375,12 +348,6 @@ Scene_Game.prototype._setInaccuracyTolerance = function (value) {
 	this._inaccuracyBoundaryRight.bitmap.drawText(this._inaccuracyTolerance, 0, 0, 128, 40, 'left');
 }
 
-Scene_Game.prototype._clearObject = function (event, color) {
-	const bitmap = this._lines[event.lineno];
-	bitmap.textColor = color;
-	this._drawObject(this._parseKey(event.event), event.x, event.parameter, bitmap);
-}
-
 Scene_Game.prototype._getXFromTime = function (time) {
 	return this._lastX + (time - this._lastTime) / this._millisecondsPerPixel;
 }
@@ -392,7 +359,7 @@ Scene_Game.prototype._setButtonsVisible = function (visibility) {
 
 Scene_Game.prototype._finish = function () {
 	this._ended = true;
-	const percentage = this._score / (this._objectsCount * 2000);
+	const percentage = this._score / (this._beatmap.objectsCount*2000);
 	let grade;
 	if (percentage >= 0.6) {
 		grade = 7;
@@ -412,7 +379,7 @@ Scene_Game.prototype._finish = function () {
 		grade = 0;
 	}
 	this._gradeSprite.bitmap.drawText(grade, 0, 0, 30, 40, 'right');
-	if (this._combo === this._objectsCount)
+	if (this._combo === this._beatmap.objectsCount)
 		this._fullCombo.visible = true;
 	this._judgingLine.visible = false;
 	this._pause();
