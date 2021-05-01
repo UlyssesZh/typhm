@@ -61,6 +61,7 @@ Scene_BrowseFiles.prototype.start = function () {
 			this._scoreResult.bitmap.drawText(file.name, 0, 0, 1024, 32, 'center');
 			const beatmap = new Beatmap(URL.createObjectURL(file));
 			beatmap.load().then(r => {
+				this._preview.bitmap.clear();
 				this._preview.bitmap.drawText(`Title: ${beatmap.title}`, 0, 0, Graphics.width, 40);
 				this._preview.bitmap.drawText(`Music author: ${beatmap.musicAuthor}`, 0, 40, Graphics.width, 40);
 				this._preview.bitmap.drawText(`Beatmap author: ${beatmap.beatmapAuthor}`, 0, 80, Graphics.width, 40);
