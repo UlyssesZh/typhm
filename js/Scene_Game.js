@@ -147,7 +147,7 @@ Scene_Game.prototype.start = function () {
 Scene_Game.prototype.update = function () {
 	if (!this._paused && !this._ended) {
 		const now = this._now();
-		this._progressIndicator.x = Graphics.width*(now-this._beatmap.start)/this._beatmap.length;
+		this._progressIndicator.x = Graphics.width*(now-this._beatmap.start)/this._length;
 		this._judgingLine.x = this._getXFromTime(now);
 		this._judgingLine.y = this._line1.y;
 		let i = 0;
@@ -229,17 +229,26 @@ Scene_Game.prototype._onLoad = async function () {
 		this._audioPlayer = new WebAudio(this._musicUrl);
 		this._audioPlayer.addLoadListener(() => {
 			this._audioPlayer.volume = this._beatmap.volume;
-			this._pauseButton.visible = true;
-			this._loading.visible = false;
-			this._judgingLine.visible = true;
-			this._line1.bitmap = this._beatmap.lines[this._line1Index];
-			this._line2.bitmap = this._beatmap.lines[this._line2Index];
-			this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
-			this._resume();
+			this._length = this._beatmap.length !== 'unknown ' ?
+					this._beatmap.length : this._audioPlayer._totalTime*1000;
+			this._postLoadingAudio();
 		});
 		this._audioPlayer.addStopListener(this._onStop.bind(this));
+	} else {
+		this._length = this._beatmap.events[this._beatmap.events.length - 1].time - this._beatmap.start;
+		this._postLoadingAudio();
 	}
 };
+
+Scene_Game.prototype._postLoadingAudio = function () {
+	this._pauseButton.visible = true;
+	this._loading.visible = false;
+	this._judgingLine.visible = true;
+	this._line1.bitmap = this._beatmap.lines[this._line1Index];
+	this._line2.bitmap = this._beatmap.lines[this._line2Index];
+	this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
+	this._resume();
+}
 
 Scene_Game.prototype._onBlur = function () {
 	if (!this._paused)
