@@ -16,8 +16,8 @@ Beatmap.prototype.load = async function () {
 	this.beatmapAuthor = head.beatmapAuthor || '';
 	this.difficulty = head.difficulty || 'unknown';
 	this.start = head.start ? parseFloat(head.start) : 0.0;
-	this.end = head.end ? parseFloat(head.end) : this.audioUrl ? await this._audioDuration() || null : null;
-	this.length = this.end ? this.end - this.start : 'unknown ';
+	this.end = head.end ? parseFloat(head.end) : this.audioUrl ? await TyphmUtils.getAudioDuration() || null : null;
+	this.length = this.end && this.end - this.start;
 	this.volume = head.volume ? parseFloat(head.volume) : 1.0;
 	this.eventsCount = data.length - 2;
 	this.objectsCount = 0;
@@ -75,13 +75,4 @@ Beatmap.prototype.clearObject = function (event, color) {
 Beatmap.prototype._drawObject = function (event) {
 	this.lines[event.lineno].drawText(event.key,
 			event.x-16, -event.y+TyphmConstants.LINES_HEIGHT/2-16, 32, 32, 'center');
-};
-
-Beatmap.prototype._audioDuration = async function () {
-	return new Promise((resolve) => {
-		let audio = new Audio();
-		audio.addEventListener('loadedmetadata', () => resolve(audio.duration*1000));
-		audio.preload = 'metadata';
-		audio.src = this.audioUrl;
-	});
 };

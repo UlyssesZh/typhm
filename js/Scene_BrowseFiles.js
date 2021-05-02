@@ -53,25 +53,14 @@ Scene_BrowseFiles.prototype.start = function () {
 		const file = musicInput.files[0];
 		if (file)
 			this._musicResult.bitmap.drawText(file.name, 0, 0, 1024, 32, 'center');
+		this._refreshPreview();
 	};
 	scoreInput.oninput = (event) => {
 		this._scoreResult.bitmap.clear();
 		const file = scoreInput.files[0];
-		if (file) {
+		if (file)
 			this._scoreResult.bitmap.drawText(file.name, 0, 0, 1024, 32, 'center');
-			const beatmap = new Beatmap(URL.createObjectURL(file));
-			beatmap.load().then(r => {
-				this._preview.bitmap.clear();
-				this._preview.bitmap.drawText(`Title: ${beatmap.title}`, 0, 0, Graphics.width, 40);
-				this._preview.bitmap.drawText(`Music author: ${beatmap.musicAuthor}`, 0, 40, Graphics.width, 40);
-				this._preview.bitmap.drawText(`Beatmap author: ${beatmap.beatmapAuthor}`, 0, 80, Graphics.width, 40);
-				this._preview.bitmap.drawText(`Difficulty: ${beatmap.difficulty}`, 0, 120, Graphics.width, 40);
-				this._preview.bitmap.drawText(`Length: ${beatmap.length}ms`, 0, 160, Graphics.width, 40);
-				this._preview.bitmap.drawText(`Objects count: ${beatmap.objectsCount}`, 0, 200, Graphics.width, 40);
-			});
-		} else {
-			this._preview.bitmap.clear();
-		}
+		this._refreshPreview();
 	};
 
 	musicInput.oninput();
@@ -124,3 +113,32 @@ Scene_BrowseFiles.prototype._onKeydown = function (event) {
 		this._shouldBack = true;
 	}
 };
+
+Scene_BrowseFiles.prototype._refreshPreview = async function () {
+	const scoreFile = scoreInput.files[0];
+	if (scoreFile) {
+		const beatmap = new Beatmap(URL.createObjectURL(scoreFile));
+		await beatmap.load().then(async r => {
+			let length;
+			if (beatmap.length) {
+				length = beatmap.length;
+			} else {
+				const musicFile = musicInput.files[0];
+				if (musicFile) {
+					length = await TyphmUtils.getAudioDuration(URL.createObjectURL(musicFile)) - beatmap.start;
+				} else {
+					length = beatmap.events[beatmap.events.length - 1].time - beatmap.start;
+				}
+			}
+			this._preview.bitmap.clear();
+			this._preview.bitmap.drawText(`Title: ${beatmap.title}`, 0, 0, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Music author: ${beatmap.musicAuthor}`, 0, 40, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Beatmap author: ${beatmap.beatmapAuthor}`, 0, 80, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Difficulty: ${beatmap.difficulty}`, 0, 120, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Length: ${length}ms`, 0, 160, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Objects count: ${beatmap.objectsCount}`, 0, 200, Graphics.width, 40);
+		});
+	} else {
+		this._preview.bitmap.clear();
+	}
+}

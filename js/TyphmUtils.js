@@ -4,7 +4,7 @@ function TyphmUtils() {
 
 TyphmUtils.getHexFromRatio = function (ratio) {
 	return Math.round(ratio*255).toString(16).padStart(2, '0');
-}
+};
 
 TyphmUtils.getRgbFromHue = function (hue) {
 	const m = (Math.abs(hue) / (Math.PI/3)) % 6;
@@ -21,11 +21,20 @@ TyphmUtils.getRgbFromHue = function (hue) {
 	} else if (m < 6) {
 		return `#ff00${this.getHexFromRatio(6-m)}`;
 	}
-}
+};
 
 TyphmUtils.parseKey = function (key) {
 	if (TyphmConstants.KEYS.has(key))
 		return key;
 	else if (TyphmConstants.ESCAPES[key])
 		return TyphmConstants.ESCAPES[key];
-}
+};
+
+TyphmUtils.getAudioDuration = async function (url) {
+	return new Promise(resolve => {
+		let audio = new Audio();
+		audio.addEventListener('loadedmetadata', () => resolve(audio.duration*1000));
+		audio.preload = 'metadata';
+		audio.src = url;
+	});
+};
