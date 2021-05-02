@@ -5,14 +5,14 @@ function Scene_Game() {
 Scene_Game.prototype = Object.create(Scene_Base.prototype);
 Scene_Game.prototype.constructor = Scene_Game;
 
-Scene_Game.prototype.initialize = function (musicUrl, scoreUrl) {
+Scene_Game.prototype.initialize = function (musicUrl, beatmapUrl) {
 	Scene_Base.prototype.initialize.call(this);
 	this._musicUrl = musicUrl;
-	this._scoreUrl = scoreUrl;
+	this._beatmapUrl = beatmapUrl;
 };
 
 Scene_Game.prototype.start = function () {
-	console.log(this._musicUrl, this._scoreUrl);
+	console.log(this._musicUrl, this._beatmapUrl);
 
 	this._loading = new Sprite(new Bitmap(120, 32));
 	this._center(this._loading, 300);
@@ -58,11 +58,11 @@ Scene_Game.prototype.start = function () {
 	this._center(this._line2, Graphics.height * 3/4);
 	this.addChild(this._line2);
 
-	this._judgingLine = new Sprite(new Bitmap(1, 256));
-	this._judgingLine.bitmap.fillAll('gray');
-	this._judgingLine.anchor.y = 0.5;
-	this._judgingLine.visible = false;
-	this.addChild(this._judgingLine);
+	this._judgeLine = new Sprite(new Bitmap(1, 256));
+	this._judgeLine.bitmap.fillAll('gray');
+	this._judgeLine.anchor.y = 0.5;
+	this._judgeLine.visible = false;
+	this.addChild(this._judgeLine);
 
 	this._scoreSprite = new Sprite(new Bitmap(256, 40));
 	this._scoreSprite.anchor.x = 1;
@@ -74,12 +74,12 @@ Scene_Game.prototype.start = function () {
 	this._comboSprite.y = Graphics.height;
 	this.addChild(this._comboSprite);
 
-	this._gradeSprite = new Sprite(new Bitmap(30, 40));
-	this._gradeSprite.anchor.x = 1;
-	this._gradeSprite.anchor.y = 1;
-	this._gradeSprite.x = Graphics.width;
-	this._gradeSprite.y = Graphics.height;
-	this.addChild(this._gradeSprite);
+	this._markSprite = new Sprite(new Bitmap(30, 40));
+	this._markSprite.anchor.x = 1;
+	this._markSprite.anchor.y = 1;
+	this._markSprite.x = Graphics.width;
+	this._markSprite.y = Graphics.height;
+	this.addChild(this._markSprite);
 
 	this._fullCombo = new Sprite(new Bitmap(60, 40));
 	this._fullCombo.anchor.y = 1;
@@ -117,7 +117,7 @@ Scene_Game.prototype.start = function () {
 	this._progressIndicator.anchor.x = 1;
 	this.addChild(this._progressIndicator);
 
-	this._beatmap = new Beatmap(this._scoreUrl);
+	this._beatmap = new Beatmap(this._beatmapUrl);
 
 	this._hasMusic = !!this._musicUrl;
 	this._ended = false;
@@ -148,8 +148,8 @@ Scene_Game.prototype.update = function () {
 	if (!this._paused && !this._ended) {
 		const now = this._now();
 		this._progressIndicator.x = Graphics.width*(now-this._beatmap.start)/this._length;
-		this._judgingLine.x = this._getXFromTime(now);
-		this._judgingLine.y = this._line1.y;
+		this._judgeLine.x = this._getXFromTime(now);
+		this._judgeLine.y = this._line1.y;
 		let i = 0;
 		while (true) {
 			const event = this._unclearedEvents[i];
@@ -200,7 +200,7 @@ Scene_Game.prototype.update = function () {
 		}
 	}
 	if (this._shouldRestart) {
-		window.scene = new Scene_Game(this._musicUrl, this._scoreUrl);
+		window.scene = new Scene_Game(this._musicUrl, this._beatmapUrl);
 	}
 	if (this._shouldBack) {
 		window.scene = new Scene_Title();
@@ -243,7 +243,7 @@ Scene_Game.prototype._onLoad = async function () {
 Scene_Game.prototype._postLoadingAudio = function () {
 	this._pauseButton.visible = true;
 	this._loading.visible = false;
-	this._judgingLine.visible = true;
+	this._judgeLine.visible = true;
 	this._line1.bitmap = this._beatmap.lines[this._line1Index];
 	this._line2.bitmap = this._beatmap.lines[this._line2Index];
 	this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
@@ -381,27 +381,27 @@ Scene_Game.prototype._setButtonsVisible = function (visibility) {
 Scene_Game.prototype._finish = function () {
 	this._ended = true;
 	const percentage = this._score / (this._beatmap.objectsCount*2000);
-	let grade;
+	let mark;
 	if (percentage >= 0.6) {
-		grade = 7;
+		mark = 7;
 	} else if (percentage >= 0.5) {
-		grade = 6;
+		mark = 6;
 	} else if (percentage >= 0.4) {
-		grade = 5;
+		mark = 5;
 	} else if (percentage >= 0.3) {
-		grade = 4;
+		mark = 4;
 	} else if (percentage >= 0.2) {
-		grade = 3;
+		mark = 3;
 	} else if (percentage >= 0.1) {
-		grade = 2;
+		mark = 2;
 	} else if (percentage >= 0) {
-		grade = 1;
+		mark = 1;
 	} else {
-		grade = 0;
+		mark = 0;
 	}
-	this._gradeSprite.bitmap.drawText(grade, 0, 0, 30, 40, 'right');
+	this._markSprite.bitmap.drawText(mark, 0, 0, 30, 40, 'right');
 	if (this._combo === this._beatmap.objectsCount)
 		this._fullCombo.visible = true;
-	this._judgingLine.visible = false;
+	this._judgeLine.visible = false;
 	this._pause();
 };

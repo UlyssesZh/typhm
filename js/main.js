@@ -5,9 +5,9 @@
 window.musicInput = document.createElement('input');
 musicInput.type = 'file';
 musicInput.accept = 'audio/*';
-window.scoreInput = document.createElement('input');
-scoreInput.type = 'file';
-scoreInput.accept = '.typhm';
+window.beatmapInput = document.createElement('input');
+beatmapInput.type = 'file';
+beatmapInput.accept = '.typhm';
 
 window.onload = () => {
 	Graphics.initialize(1024, 768, 'webgl');
