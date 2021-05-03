@@ -12,36 +12,52 @@ Scene_Title.prototype.start = function () {
 	this._title.bitmap.drawText('Typhm', 0, 0, 150, 54, 'center');
 	this.addChild(this._title);
 
-	this._files = new Button(new Bitmap(256, 32), () => { this._shouldGotoFiles = true; });
+	this._files = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldGotoFiles = true; });
 	this._center(this._files, 400);
-	this._files.bitmap.drawText('Browse files (F)', 0, 0, 256, 32, 'center');
+	this._files.bitmap.drawText('Browse files (f)', 0, 0, 256,
+			TyphmConstants.TEXT_HEIGHT, 'center');
 	this.addChild(this._files);
 
-	this._store = new Button(new Bitmap(256, 32), () => { this._shouldGotoStore = true; });
-	this._center(this._store, 440);
-	this._store.bitmap.drawText('Browse store (S)', 0, 0, 256, 32, 'center');
+	this._store = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldGotoStore = true; });
+	this._center(this._store, 400+TyphmConstants.TEXT_HEIGHT);
+	this._store.bitmap.drawText('Browse store (s)', 0, 0, 256,
+			TyphmConstants.TEXT_HEIGHT, 'center');
 	this.addChild(this._store);
 
-	this._history = new Button(new Bitmap(256, 32), () => { this._shouldGotoHistory = true; });
-	this._center(this._history, 480);
-	this._history.bitmap.drawText('Browse history (H)', 0, 0, 256, 32, 'center');
+	this._history = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldGotoHistory = true; });
+	this._center(this._history, 400+TyphmConstants.TEXT_HEIGHT*2);
+	this._history.bitmap.drawText('Browse history (h)', 0, 0, 256,
+			TyphmConstants.TEXT_HEIGHT, 'center');
 	this.addChild(this._history);
+
+	this._preferences = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldGotoPreferences = true; });
+	this._center(this._preferences, 400+TyphmConstants.TEXT_HEIGHT*4);
+	this._preferences.bitmap.drawText('Preferences (p)', 0, 0, 256,
+			TyphmConstants.TEXT_HEIGHT, 'center')
+	this.addChild(this._preferences)
 
 	this._shouldGotoFiles = false;
 	this._shouldGotoStore = false;
 	this._shouldGotoHistory = false;
+	this._shouldGotoPreferences = false;
 
 	this._keydownEventListener = this._onKeydown.bind(this);
 	document.addEventListener('keydown', this._keydownEventListener);
 };
 
 Scene_Title.prototype._onKeydown = function (event) {
-	if (event.key === 'f' || event.key === 'F') {
+	if (event.key === 'f') {
 		this._shouldGotoFiles = true;
-	} else if (event.key === 's' || event.key === 'S') {
+	} else if (event.key === 's') {
 		this._shouldGotoStore = true;
-	} else if (event.key === 'h' || event.key === 'H') {
+	} else if (event.key === 'h') {
 		this._shouldGotoHistory = true;
+	} else if (event.key === 'p') {
+		this._shouldGotoPreferences = true;
 	}
 };
 
@@ -52,6 +68,8 @@ Scene_Title.prototype.update = function () {
 		// TODO
 	} else if (this._shouldGotoHistory) {
 		// TODO
+	} else if (this._shouldGotoPreferences) {
+		window.scene = new Scene_Preferences();
 	}
 	Scene_Base.prototype.update.call(this);
 };

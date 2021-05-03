@@ -14,9 +14,9 @@ Scene_Game.prototype.initialize = function (musicUrl, beatmapUrl) {
 Scene_Game.prototype.start = function () {
 	console.log(this._musicUrl, this._beatmapUrl);
 
-	this._loading = new Sprite(new Bitmap(120, 32));
+	this._loading = new Sprite(new Bitmap(120, TyphmConstants.TEXT_HEIGHT));
 	this._center(this._loading, 300);
-	this._loading.bitmap.drawText('Loading...', 0, 0, 120, 32, 'white');
+	this._loading.bitmap.drawText('Loading...', 0, 0, 120, TyphmConstants.TEXT_HEIGHT, 'white');
 	this.addChild(this._loading);
 
 	this._pauseButton = new Button(new Bitmap(30, 32), () => { this._pause(); });
@@ -25,17 +25,20 @@ Scene_Game.prototype.start = function () {
 	this._pauseButton.visible = false;
 	this.addChild(this._pauseButton);
 
-	this._back = new Button(new Bitmap(128, 40), () => { this._shouldBack = true; });
-	this._back.bitmap.drawText('Back (B)', 0, 0, 128, 40, 'center');
+	this._back = new Button(new Bitmap(128, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldBack = true; });
+	this._back.bitmap.drawText('Back (b)', 0, 0, 128, TyphmConstants.TEXT_HEIGHT, 'center');
 	this._back.x = 30;
 	this.addChild(this._back);
 
-	this._restart = new Button(new Bitmap(128, 40), () => { this._shouldRestart = true });
-	this._restart.bitmap.drawText('Restart (R)', 0, 0, 128, 40, 'center');
+	this._restart = new Button(new Bitmap(128, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldRestart = true });
+	this._restart.bitmap.drawText('Restart (r)', 0, 0, 128, TyphmConstants.TEXT_HEIGHT, 'center');
 	this._restart.x = 30+128;
 	this.addChild(this._restart);
 
-	this._title = new Sprite(new Bitmap(Graphics.width - (32+128+128+64), 40));
+	this._title = new Sprite(new Bitmap(Graphics.width - (32+128+128+64),
+			TyphmConstants.TEXT_HEIGHT));
 	this._title.x = 32+128+128;
 	this.addChild(this._title);
 
@@ -64,28 +67,28 @@ Scene_Game.prototype.start = function () {
 	this._judgeLine.visible = false;
 	this.addChild(this._judgeLine);
 
-	this._scoreSprite = new Sprite(new Bitmap(256, 40));
+	this._scoreSprite = new Sprite(new Bitmap(256, TyphmConstants.TEXT_HEIGHT));
 	this._scoreSprite.anchor.x = 1;
 	this._scoreSprite.x = Graphics.width;
 	this.addChild(this._scoreSprite);
 
-	this._comboSprite = new Sprite(new Bitmap(128, 40));
+	this._comboSprite = new Sprite(new Bitmap(128, TyphmConstants.TEXT_HEIGHT));
 	this._comboSprite.anchor.y = 1;
 	this._comboSprite.y = Graphics.height;
 	this.addChild(this._comboSprite);
 
-	this._markSprite = new Sprite(new Bitmap(30, 40));
+	this._markSprite = new Sprite(new Bitmap(30, TyphmConstants.TEXT_HEIGHT));
 	this._markSprite.anchor.x = 1;
 	this._markSprite.anchor.y = 1;
 	this._markSprite.x = Graphics.width;
 	this._markSprite.y = Graphics.height;
 	this.addChild(this._markSprite);
 
-	this._fullCombo = new Sprite(new Bitmap(60, 40));
+	this._fullCombo = new Sprite(new Bitmap(60, TyphmConstants.TEXT_HEIGHT));
 	this._fullCombo.anchor.y = 1;
 	this._fullCombo.y = Graphics.height;
 	this._fullCombo.x = 80;
-	this._fullCombo.bitmap.drawText('FC', 0, 0, 60, 40, 'center');
+	this._fullCombo.bitmap.drawText('FC', 0, 0, 60, TyphmConstants.TEXT_HEIGHT, 'center');
 	this._fullCombo.visible = false;
 	this.addChild(this._fullCombo);
 
@@ -99,14 +102,14 @@ Scene_Game.prototype.start = function () {
 	this._inaccuracyBitmap = new Bitmap(3, 16);
 	this._inaccuracyBitmap.fillAll('white');
 
-	this._inaccuracyBoundaryLeft = new Sprite(new Bitmap(128, 40));
+	this._inaccuracyBoundaryLeft = new Sprite(new Bitmap(128, TyphmConstants.TEXT_HEIGHT));
 	this._inaccuracyBoundaryLeft.anchor.x = 1;
 	this._inaccuracyBoundaryLeft.anchor.y = 0.5;
 	this._inaccuracyBoundaryLeft.x = this._inaccuracyBar.x - this._inaccuracyBar.width/2 - 10;
 	this._inaccuracyBoundaryLeft.y = this._inaccuracyBar.y;
 	this.addChild(this._inaccuracyBoundaryLeft);
 
-	this._inaccuracyBoundaryRight = new Sprite(new Bitmap(128, 40));
+	this._inaccuracyBoundaryRight = new Sprite(new Bitmap(128, TyphmConstants.TEXT_HEIGHT));
 	this._inaccuracyBoundaryRight.anchor.y = 0.5;
 	this._inaccuracyBoundaryRight.x = this._inaccuracyBar.x + this._inaccuracyBar.width/2 + 10;
 	this._inaccuracyBoundaryRight.y = this._inaccuracyBar.y;
@@ -138,10 +141,13 @@ Scene_Game.prototype.start = function () {
 	this._blurEventListener = this._onBlur.bind(this);
 	window.addEventListener('blur', this._blurEventListener);
 
+	this._loadingFinished = false;
 	this._onLoad();
 
 	this._shouldRestart = false;
 	this._shouldBack = false;
+
+	this._offsetWizard = false;
 };
 
 Scene_Game.prototype.update = function () {
@@ -220,8 +226,11 @@ Scene_Game.prototype._onLoad = async function () {
 		this._hasMusic = true;
 		this._musicUrl = this._beatmap.audioUrl;
 	}
+	if (this._beatmap.title === 'offset_wizard' && this._hasMusic)
+		this._inaccuraciesArray = [];
 	this._lastPos = this._beatmap.start;
-	this._title.bitmap.drawText(this._beatmap.title, 0, 0, this._title.width, 40, 'center');
+	this._title.bitmap.drawText(this._beatmap.title, 0, 0, this._title.width,
+			TyphmConstants.TEXT_HEIGHT, 'center');
 	this._updateScore();
 	this._updateCombo();
 	this._unclearedEvents = [...this._beatmap.events];
@@ -247,6 +256,7 @@ Scene_Game.prototype._postLoadingAudio = function () {
 	this._line1.bitmap = this._beatmap.lines[this._line1Index];
 	this._line2.bitmap = this._beatmap.lines[this._line2Index];
 	this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
+	this._loadingFinished = true;
 	this._resume();
 }
 
@@ -278,11 +288,16 @@ Scene_Game.prototype._pause = function () {
 };
 
 Scene_Game.prototype._resume = function () {
+	if (!this._loadingFinished)
+		return;
 	this._paused = false;
 	this._setButtonsVisible(false);
-	if (!this._ended && this._hasMusic) {
-		this._starting = performance.now() - this._lastPos;
-		this._audioPlayer.play(false, this._lastPos/1000);
+	if (!this._ended) {
+		if (this._hasMusic) {
+			this._audioPlayer.play(false, this._lastPos/1000);
+		} else {
+			this._starting = performance.now() - this._lastPos;
+		}
 	}
 };
 
@@ -296,15 +311,18 @@ Scene_Game.prototype._onKeydown = function (event) {
 			this._shouldBack = true;
 		}
 	} else {
+		const now = this._now();
 		const key = TyphmUtils.parseKey(event.key);
 		if (key && !this._ended) {
 			let hit = false;
 			for (let i = 0; i < this._unclearedEvents.length; i++) {
-				const now = this._now();
 				const event = this._unclearedEvents[i];
 				if (now <= event.time - this._inaccuracyTolerance)
 					break;
 				else if (key === event.event) {
+					if (this._inaccuraciesArray) {
+						this._inaccuraciesArray.push(now - event.time);
+					}
 					inaccuracy = (now - event.time) / this._inaccuracyTolerance;
 					this._beatmap.clearObject(event, TyphmUtils.getRgbFromHue(2*Math.PI*inaccuracy));
 					this._unclearedEvents.splice(i, 1);
@@ -329,17 +347,20 @@ Scene_Game.prototype._onKeydown = function (event) {
 
 Scene_Game.prototype._updateScore = function () {
 	this._scoreSprite.bitmap.clear();
-	this._scoreSprite.bitmap.drawText(this._score, 0, 0, 256, 40, 'right');
+	this._scoreSprite.bitmap.drawText(this._score, 0, 0, 256, TyphmConstants.TEXT_HEIGHT, 'right');
 };
 
 Scene_Game.prototype._updateCombo = function () {
 	this._comboSprite.bitmap.clear();
-	this._comboSprite.bitmap.drawText(this._combo, 0, 0, 128, 40, 'left');
+	this._comboSprite.bitmap.drawText(this._combo, 0, 0, 128, TyphmConstants.TEXT_HEIGHT, 'left');
 };
 
 Scene_Game.prototype._now = function () {
 	if (this._hasMusic) {
-		return this._paused ? this._lastPos : this._audioPlayer.seek()*1000;
+		if (this._paused)
+			return this._lastPos + preferences.offset;
+		else
+			return this._audioPlayer.seek()*1000 + preferences.offset;
 	} else {
 		return performance.now() - this._starting;
 	}
@@ -364,9 +385,11 @@ Scene_Game.prototype._createInaccuracyIndicator = function (inaccuracy) {
 Scene_Game.prototype._setInaccuracyTolerance = function (value) {
 	this._inaccuracyTolerance = value;
 	this._inaccuracyBoundaryLeft.bitmap.clear();
-	this._inaccuracyBoundaryLeft.bitmap.drawText(-this._inaccuracyTolerance, 0, 0, 128, 40, 'right');
+	this._inaccuracyBoundaryLeft.bitmap.drawText(-this._inaccuracyTolerance, 0, 0,
+			128, TyphmConstants.TEXT_HEIGHT, 'right');
 	this._inaccuracyBoundaryRight.bitmap.clear();
-	this._inaccuracyBoundaryRight.bitmap.drawText(this._inaccuracyTolerance, 0, 0, 128, 40, 'left');
+	this._inaccuracyBoundaryRight.bitmap.drawText(this._inaccuracyTolerance, 0, 0,
+			128, TyphmConstants.TEXT_HEIGHT, 'left');
 };
 
 Scene_Game.prototype._getXFromTime = function (time) {
@@ -380,28 +403,30 @@ Scene_Game.prototype._setButtonsVisible = function (visibility) {
 
 Scene_Game.prototype._finish = function () {
 	this._ended = true;
-	const percentage = this._score / (this._beatmap.objectsCount*2000);
+	const percentage = this._score / (this._beatmap.notesCount*2000);
 	let mark;
-	if (percentage >= 0.6) {
+	if (percentage >= 0.85) {
 		mark = 7;
-	} else if (percentage >= 0.5) {
+	} else if (percentage >= 0.75) {
 		mark = 6;
-	} else if (percentage >= 0.4) {
+	} else if (percentage >= 0.65) {
 		mark = 5;
-	} else if (percentage >= 0.3) {
+	} else if (percentage >= 0.55) {
 		mark = 4;
-	} else if (percentage >= 0.2) {
+	} else if (percentage >= 0.40) {
 		mark = 3;
-	} else if (percentage >= 0.1) {
+	} else if (percentage >= 0.25) {
 		mark = 2;
-	} else if (percentage >= 0) {
+	} else if (percentage >= 0.01) {
 		mark = 1;
 	} else {
 		mark = 0;
 	}
-	this._markSprite.bitmap.drawText(mark, 0, 0, 30, 40, 'right');
-	if (this._combo === this._beatmap.objectsCount)
+	this._markSprite.bitmap.drawText(mark, 0, 0, 30, TyphmConstants.TEXT_HEIGHT, 'right');
+	if (this._combo === this._beatmap.notesCount)
 		this._fullCombo.visible = true;
 	this._judgeLine.visible = false;
+	if (this._inaccuraciesArray)
+		preferences.offset -= this._inaccuraciesArray.reduce((a, b) => a + b) / this._inaccuraciesArray.length;
 	this._pause();
 };

@@ -134,16 +134,16 @@ The mark is an integer ranging from 0 to 7.
 The mark scale is
 | Mark | Score       |
 | ---- | ----------- |
-| 7    | [60%, 100%] |
-| 6    | [50%, 60%)  |
-| 5    | [40%, 50%)  |
-| 4    | [30%, 40%)  |
-| 3    | [20%, 30%)  |
-| 2    | [10%, 20%)  |
-| 1    | [0%, 10%)   |
-| 0    | (-inf, 0%)  |
+| 7    | [85%, 100%] |
+| 6    | [75%, 85%)  |
+| 5    | [65%, 75%)  |
+| 4    | [55%, 65%)  |
+| 3    | [40%, 55%)  |
+| 2    | [25%, 40%)  |
+| 1    | [1%, 25%)   |
+| 0    | (-inf, 1%)  |
 
-Typically, if you want to get a 6, you should try to hit every note
+Typically, if you want to get a 5, you should try to hit every note
 with an inaccuracy within half the inaccuracy tolerance.
 If the inaccuracy is exactly half the inaccuracy tolerance,
 you earns half the full score of the note by hitting it.

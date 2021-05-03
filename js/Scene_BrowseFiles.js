@@ -6,40 +6,49 @@ Scene_BrowseFiles.prototype = Object.create(Scene_Base.prototype);
 Scene_BrowseFiles.prototype.constructor = Scene_BrowseFiles;
 
 Scene_BrowseFiles.prototype.start = function () {
-	this._musicPrompt = new Button(new Bitmap(256, 32), () => { this._shouldUploadAudio = true; });
-	this._musicPrompt.bitmap.drawText('Upload audio (A)', 0, 0, 256, 32, 'center');
-	this._center(this._musicPrompt, 40);
+	this._musicPrompt = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldUploadAudio = true; });
+	this._musicPrompt.bitmap.drawText('Upload audio (a)', 0, 0,
+			256, TyphmConstants.TEXT_HEIGHT, 'center');
+	this._center(this._musicPrompt, TyphmConstants.TEXT_HEIGHT);
 	this.addChild(this._musicPrompt);
 
 	this._musicResult = new Sprite(new Bitmap(1024, 32));
 	this._musicResult.bitmap.textColor = 'gray';
-	this._center(this._musicResult, 80);
+	this._center(this._musicResult, TyphmConstants.TEXT_HEIGHT*2);
 	this.addChild(this._musicResult);
 
-	this._beatmapPrompt = new Button(new Bitmap(256, 32), () => { this._shouldUploadBeatmap = true; });
-	this._beatmapPrompt.bitmap.drawText('Upload beatmap (B)', 0, 0, 256, 32, 'center');
-	this._center(this._beatmapPrompt, 160);
+	this._beatmapPrompt = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldUploadBeatmap = true; });
+	this._beatmapPrompt.bitmap.drawText('Upload beatmap (b)', 0, 0,
+			256, TyphmConstants.TEXT_HEIGHT, 'center');
+	this._center(this._beatmapPrompt, TyphmConstants.TEXT_HEIGHT*4);
 	this.addChild(this._beatmapPrompt);
 
-	this._beatmapResult = new Sprite(new Bitmap(1024, 32));
+	this._beatmapResult = new Sprite(new Bitmap(1024, TyphmConstants.TEXT_HEIGHT));
 	this._beatmapResult.bitmap.textColor = 'gray';
-	this._center(this._beatmapResult, 200);
+	this._center(this._beatmapResult, TyphmConstants.TEXT_HEIGHT*5);
 	this.addChild(this._beatmapResult);
 
-	this._ok = new Button(new Bitmap(256, 32), () => { this._shouldOk = true; });
-	this._center(this._ok, 280);
-	this._ok.bitmap.drawText('OK (Enter)', 0, 0, 256, 32, 'center');
+	this._ok = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldOk = true; });
+	this._center(this._ok, TyphmConstants.TEXT_HEIGHT*7);
+	this._ok.bitmap.drawText('OK (\\n)', 0, 0,
+			256, TyphmConstants.TEXT_HEIGHT, 'center');
 	this.addChild(this._ok);
 
-	this._back = new Button(new Bitmap(256, 32), () => { this._shouldBack = true; });
-	this._center(this._back, 320);
-	this._back.bitmap.drawText('Back (Escape)', 0, 0, 256, 32, 'center');
+	this._back = new Button(new Bitmap(256, TyphmConstants.TEXT_HEIGHT),
+			() => { this._shouldBack = true; });
+	this._center(this._back, TyphmConstants.TEXT_HEIGHT*8);
+	this._back.bitmap.drawText('Back (Esc)', 0, 0,
+			256, TyphmConstants.TEXT_HEIGHT, 'center');
 	this.addChild(this._back);
 
-	this._beatmapAlert = new Sprite(new Bitmap(300, 32));
+	this._beatmapAlert = new Sprite(new Bitmap(300, TyphmConstants.TEXT_HEIGHT));
 	this._beatmapAlert.bitmap.textColor = 'red';
-	this._beatmapAlert.bitmap.drawText('Upload a beatmap first.', 0, 0, 300, 32, 'center');
-	this._center(this._beatmapAlert, 400);
+	this._beatmapAlert.bitmap.drawText('Upload a beatmap first.', 0, 0,
+			300, TyphmConstants.TEXT_HEIGHT, 'center');
+	this._center(this._beatmapAlert, TyphmConstants.TEXT_HEIGHT*10);
 	this._beatmapAlert.visible = false;
 	this.addChild(this._beatmapAlert);
 
@@ -136,7 +145,7 @@ Scene_BrowseFiles.prototype._refreshPreview = async function () {
 			this._preview.bitmap.drawText(`Beatmap author: ${beatmap.beatmapAuthor}`, 0, 80, Graphics.width, 40);
 			this._preview.bitmap.drawText(`Difficulty: ${beatmap.difficulty}`, 0, 120, Graphics.width, 40);
 			this._preview.bitmap.drawText(`Length: ${length}ms`, 0, 160, Graphics.width, 40);
-			this._preview.bitmap.drawText(`Objects count: ${beatmap.objectsCount}`, 0, 200, Graphics.width, 40);
+			this._preview.bitmap.drawText(`Objects count: ${beatmap.notesCount}`, 0, 200, Graphics.width, 40);
 		});
 	} else {
 		this._preview.bitmap.clear();

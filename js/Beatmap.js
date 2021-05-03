@@ -15,12 +15,18 @@ Beatmap.prototype.load = async function () {
 	this.musicAuthor = head.musicAuthor || '';
 	this.beatmapAuthor = head.beatmapAuthor || '';
 	this.difficulty = head.difficulty || 'unknown';
+	this.title = this.title.trim();
+	if (this.audioUrl)
+		this.audioUrl = this.audioUrl.trim();
+	this.musicAuthor = this.musicAuthor.trim();
+	this.beatmapAuthor = this.beatmapAuthor.trim();
+	this.difficulty = this.difficulty.trim();
 	this.start = head.start ? parseFloat(head.start) : 0.0;
 	this.end = head.end ? parseFloat(head.end) : this.audioUrl ? await TyphmUtils.getAudioDuration() || null : null;
 	this.length = this.end && this.end - this.start;
 	this.volume = head.volume ? parseFloat(head.volume) : 1.0;
 	this.eventsCount = data.length - 2;
-	this.objectsCount = 0;
+	this.notesCount = 0;
 	this.events = [];
 	for (let i = 1; i <= this.eventsCount; i++) {
 		const event = {
@@ -30,7 +36,7 @@ Beatmap.prototype.load = async function () {
 		};
 		this.events.push(event);
 		event.key = TyphmUtils.parseKey(event.event);
-		if (event.key) this.objectsCount++;
+		if (event.key) this.notesCount++;
 	}
 	this.events.sort((event1, event2) => event1.time - event2.time);
 };
