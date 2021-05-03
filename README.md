@@ -14,13 +14,15 @@ each of which starts with providing the game with a **beatmap** (or chart).
 You need to upload a beatmap from your file system.
 
 You can also specify an audio file for the music.
+If there is no audio file specified, the game will use the [`audioUrl`](#)
 
 ### Playing through browsing the store
 
-(The feature is under development.)
-
 All the beatmaps from [the repo](https://github.com/ulysseszh/typhm_store/)
-(currently a private repo) are available publicly within the game.
+are available publicly within the game.
+
+Select "Browse store" in the game and type in the filename of the beatmap found in the store
+(without the extension ".typhm") to start playing the beatmap.
 
 You may publish your own beatmaps through sending a pull request for that repo.
 Feel free to publish new beatmaps!
@@ -31,6 +33,21 @@ Feel free to publish new beatmaps!
 
 After you played some beatmaps once,
 you can play it again by selecting from history.
+
+## How to adjust beatmap offset
+
+Sometimes, you may find that the music and the beatmap is not perfectly synchronized.
+In this case, you need to set a universal offset to cancel this effect.
+
+To set a universal offset, select "Browse store" in the title page
+and type in "offset_wizard" (without quotes) and hit Enter.
+Then, you will start playing a very simple beatmap.
+Just feel the rhythm by your heart and hit the spacebar.
+After you finish playing the beatmap, the game will adjust the offset automatically for you.
+If you are not satisfied with the new offset, you can repeat these steps.
+
+Note that after you refresh the webpage, the set offset will be cleared,
+and you will need to set it again.
 
 ## Game mechanics
 
@@ -155,8 +172,7 @@ The beatmap consists of two parts, the **head** and the list of **events**.
 The two parts are separated by a single `---` line.
 
 The following are just some specifications.
-For examples, refer to [the store](https://github.com/ulysseszh/typhm_store/)
-(currently a private repo).
+For examples, refer to [the store](https://github.com/ulysseszh/typhm_store/).
 
 ### Head
 
@@ -203,7 +219,7 @@ Though not recommended, you can specify the difficulty as
 Difficulty is intended to be a brief indicator on an ordinal scale
 of how hard the beatmap is to beat.
 You can refer to [the store](https://github.com/ulysseszh/typhm_store/)
-(currently a private repo) to see how hard on earth a certain difficulty is.
+to see how hard on earth a certain difficulty is.
 
 #### `audioUrl`
 
