@@ -20,6 +20,7 @@ Scene_Game.prototype.start = function () {
 	this.addChild(this._loading);
 
 	this._pauseButton = new Button(new Bitmap(30, 32), () => { this._pause(); });
+	this._pauseButton.y = (TyphmConstants.TEXT_HEIGHT - 32) / 2;
 	this._pauseButton.bitmap.fillRect(6, 4, 6, 24, 'white');
 	this._pauseButton.bitmap.fillRect(18, 4, 6, 24, 'white');
 	this._pauseButton.visible = false;

@@ -112,9 +112,9 @@ Scene_BrowseFiles.prototype.stop = function () {
 };
 
 Scene_BrowseFiles.prototype._onKeydown = function (event) {
-	if (event.key === 'a' || event.key === 'A') {
+	if (event.key === 'a') {
 		this._shouldUploadAudio = true;
-	} else if (event.key === 'b' || event.key === 'B') {
+	} else if (event.key === 'b') {
 		this._shouldUploadBeatmap = true;
 	} else if (event.key === 'Enter') {
 		this._shouldOk = true;

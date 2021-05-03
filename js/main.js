@@ -36,6 +36,7 @@ window.onload = () => {
 			accumulator -= deltaTime;
 		}
 		Graphics.render(window.scene);
+		window.scene.onrender();
 		requestAnimationFrame(performUpdate);
 		Graphics.tickEnd();
 	}

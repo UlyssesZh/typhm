@@ -65,7 +65,7 @@ Scene_Title.prototype.update = function () {
 	if (this._shouldGotoFiles) {
 		window.scene = new Scene_BrowseFiles();
 	} else if (this._shouldGotoStore) {
-		// TODO
+		window.scene = new Scene_BrowseStore();
 	} else if (this._shouldGotoHistory) {
 		// TODO
 	} else if (this._shouldGotoPreferences) {
