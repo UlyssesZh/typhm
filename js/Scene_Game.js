@@ -12,8 +12,6 @@ Scene_Game.prototype.initialize = function (musicUrl, beatmapUrl) {
 };
 
 Scene_Game.prototype.start = function () {
-	console.log(this._musicUrl, this._beatmapUrl);
-
 	this._loading = new Sprite(new Bitmap(120, TyphmConstants.TEXT_HEIGHT));
 	this._center(this._loading, 300);
 	this._loading.bitmap.drawText('Loading...', 0, 0, 120, TyphmConstants.TEXT_HEIGHT, 'white');
@@ -57,7 +55,7 @@ Scene_Game.prototype.start = function () {
 	this.addChild(this._line1);
 
 	this._line2 = new Sprite();
-	this._line2.width = 1024;
+	this._line2.width = Graphics.width;
 	this._line2.anchor.y = 0.5;
 	this._center(this._line2, Graphics.height * 3/4);
 	this.addChild(this._line2);
@@ -143,12 +141,11 @@ Scene_Game.prototype.start = function () {
 	window.addEventListener('blur', this._blurEventListener);
 
 	this._loadingFinished = false;
+	this._offsetWizard = false;
 	this._onLoad();
 
 	this._shouldRestart = false;
 	this._shouldBack = false;
-
-	this._offsetWizard = false;
 };
 
 Scene_Game.prototype.update = function () {
@@ -325,13 +322,15 @@ Scene_Game.prototype._onKeydown = function (event) {
 						this._inaccuraciesArray.push(now - event.time);
 					}
 					inaccuracy = (now - event.time) / this._inaccuracyTolerance;
-					this._beatmap.clearObject(event, TyphmUtils.getRgbFromHue(2*Math.PI*inaccuracy));
+					const color = TyphmUtils.getRgbFromHue(2*Math.PI*inaccuracy);
+					this._beatmap.clearObject(event, color);
 					this._unclearedEvents.splice(i, 1);
 					this._score += Math.round(1000*(Math.cos(Math.PI*inaccuracy)+1));
 					this._updateScore();
 					this._combo++;
 					this._updateCombo();
 					this._createInaccuracyIndicator(inaccuracy);
+					this._createHitEffect(event, color);
 					hit = true;
 					break;
 				}
@@ -374,12 +373,27 @@ Scene_Game.prototype._createInaccuracyIndicator = function (inaccuracy) {
 	inaccuracyIndicator.x = this._inaccuracyBar.x + 
 			this._inaccuracyBar.width/2 * inaccuracy;
 	inaccuracyIndicator.y = this._inaccuracyBar.y;
-	inaccuracyIndicator.counter = 0;
 	this.addChild(inaccuracyIndicator);
 	inaccuracyIndicator.update = () => {
 		inaccuracyIndicator.opacity -= 0.5;
 		if (inaccuracyIndicator.opacity <= 0)
 			this.removeChild(inaccuracyIndicator);
+	};
+};
+
+Scene_Game.prototype._createHitEffect = function (event, color) {
+	const hitEffect = new Sprite(new Bitmap(32, 32));
+	hitEffect.bitmap.fillAll(color);
+	hitEffect.anchor.x = 0.5;
+	hitEffect.anchor.y = 0.5;
+	const line = this._line1Index === event.lineno ? this._line1 : this._line2;
+	hitEffect.x = event.x;
+	hitEffect.y = line.y - event.y;
+	this.addChild(hitEffect);
+	hitEffect.update = () => {
+		hitEffect.opacity -= 20;
+		if (hitEffect.opacity <= 0)
+			this.removeChild(hitEffect);
 	};
 };
 

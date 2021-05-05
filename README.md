@@ -14,7 +14,8 @@ each of which starts with providing the game with a **beatmap** (or chart).
 You need to upload a beatmap from your file system.
 
 You can also specify an audio file for the music.
-If there is no audio file specified, the game will use the [`audioUrl`](#)
+If there is no audio file specified, the game will use that specified by
+[`audioUrl`](#audiourl) in the [head](#head) of the beatmap.
 
 ### Playing through browsing the store
 
