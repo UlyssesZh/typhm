@@ -293,8 +293,9 @@ Scene_Game.prototype._resume = function () {
 	if (!this._ended) {
 		if (this._hasMusic) {
 			this._audioPlayer.play(false, this._lastPos/1000);
+			this._audioPlayer.pitch = preferences.playRate;
 		} else {
-			this._starting = performance.now() - this._lastPos;
+			this._starting = performance.now() - this._lastPos/preferences.playRate;
 		}
 	}
 };
@@ -321,7 +322,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 					if (this._inaccuraciesArray) {
 						this._inaccuraciesArray.push(now - event.time);
 					}
-					inaccuracy = (now - event.time) / this._inaccuracyTolerance;
+					inaccuracy = (now - event.time)/preferences.playRate / this._inaccuracyTolerance;
 					const color = TyphmUtils.getRgbFromHue(2*Math.PI*inaccuracy);
 					this._beatmap.clearObject(event, color);
 					this._unclearedEvents.splice(i, 1);
@@ -366,7 +367,7 @@ Scene_Game.prototype._updateCombo = function () {
 			comboIndicator.opacity *= 0.95;
 			if (comboIndicator.opacity <= 5)
 				this.removeChild(comboIndicator);
-		}
+		};
 	}
 };
 
@@ -377,7 +378,7 @@ Scene_Game.prototype._now = function () {
 		else
 			return this._audioPlayer.seek()*1000 + preferences.offset;
 	} else {
-		return performance.now() - this._starting;
+		return (performance.now() - this._starting) * preferences.playRate;
 	}
 };
 
