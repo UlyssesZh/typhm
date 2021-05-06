@@ -336,6 +336,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 				}
 			}
 			if (!hit) {
+				this._createWrongNote(key, now);
 				this._combo = 0;
 				this._updateCombo();
 				this._score -= 500;
@@ -353,6 +354,20 @@ Scene_Game.prototype._updateScore = function () {
 Scene_Game.prototype._updateCombo = function () {
 	this._comboSprite.bitmap.clear();
 	this._comboSprite.bitmap.drawText(this._combo, 0, 0, 128, TyphmConstants.TEXT_HEIGHT, 'left');
+	if (this._combo > 0 && this._combo % 25 === 0) {
+		const comboIndicator = new Sprite(new Bitmap(512, 128));
+		comboIndicator.bitmap.fontSize = 108;
+		comboIndicator.bitmap.textColor = 'gray';
+		comboIndicator.bitmap.drawText(this._combo, 0, 0, 512, 128, 'center');
+		comboIndicator.anchor.y = 0.5;
+		this._center(comboIndicator, Graphics.height / 2);
+		this.addChild(comboIndicator);
+		comboIndicator.update = () => {
+			comboIndicator.opacity *= 0.95;
+			if (comboIndicator.opacity <= 5)
+				this.removeChild(comboIndicator);
+		}
+	}
 };
 
 Scene_Game.prototype._now = function () {
@@ -386,14 +401,29 @@ Scene_Game.prototype._createHitEffect = function (event, color) {
 	hitEffect.bitmap.fillAll(color);
 	hitEffect.anchor.x = 0.5;
 	hitEffect.anchor.y = 0.5;
-	const line = this._line1Index === event.lineno ? this._line1 : this._line2;
 	hitEffect.x = event.x;
-	hitEffect.y = line.y - event.y;
+	hitEffect.y = this._line1.y - event.y;
 	this.addChild(hitEffect);
 	hitEffect.update = () => {
-		hitEffect.opacity -= 20;
-		if (hitEffect.opacity <= 0)
+		hitEffect.opacity *= 0.9;
+		if (hitEffect.opacity <= 5)
 			this.removeChild(hitEffect);
+	};
+};
+
+Scene_Game.prototype._createWrongNote = function (key, time) {
+	const wrongNote = new Sprite(new Bitmap(32, 32));
+	wrongNote.bitmap.textColor = 'red';
+	wrongNote.bitmap.drawText(key, 0, 0, 32, 32, 'center');
+	wrongNote.anchor.x = 0.5;
+	wrongNote.anchor.y = 0.5;
+	wrongNote.x = this._getXFromTime(time);
+	wrongNote.y = this._line1.y - 100 + Math.random() * 200;
+	this.addChild(wrongNote);
+	wrongNote.update = () => {
+		wrongNote.opacity *= 0.9;
+		if (wrongNote.opacity <= 5)
+			this.removeChild(wrongNote);
 	};
 };
 
