@@ -119,6 +119,14 @@ Scene_Game.prototype.start = function () {
 	this._progressIndicator.anchor.x = 1;
 	this.addChild(this._progressIndicator);
 
+	if (preferences.autoPlay) {
+		this._autoPlayIndicator = new Sprite(new Bitmap(256, TyphmConstants.TEXT_HEIGHT));
+		this._autoPlayIndicator.anchor.y = 0.5;
+		this._autoPlayIndicator.y = Graphics.height / 2;
+		this._autoPlayIndicator.bitmap.drawText('Auto-playing', 0, 0, 256, TyphmConstants.TEXT_HEIGHT);
+		this.addChild(this._autoPlayIndicator);
+	}
+
 	this._beatmap = new Beatmap(this._beatmapUrl);
 
 	this._hasMusic = !!this._musicUrl;
@@ -162,8 +170,16 @@ Scene_Game.prototype.update = function () {
 			if (now < event.time)
 				break;
 			if (event.key) {
-				if (now >= event.time + this._inaccuracyTolerance) {
-					this._beatmap.clearObject(event, 'gray');
+				if (preferences.autoPlay && now >= event.time) {
+					this._beatmap.clearNote(event, 'red');
+					this._createHitEffect(event, 'red');
+					this._combo++;
+					this._updateCombo();
+					this._score += 2000;
+					this._updateScore();
+					this._unclearedEvents.splice(i, 1);
+				} else if (now >= event.time + this._inaccuracyTolerance) {
+					this._beatmap.clearNote(event, 'gray');
 					this._combo = 0;
 					this._updateCombo();
 					this._unclearedEvents.splice(i, 1);
@@ -309,7 +325,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 		} else if (event.key === 'b') {
 			this._shouldBack = true;
 		}
-	} else {
+	} else if (!preferences.autoPlay) {
 		const now = this._now();
 		const key = TyphmUtils.parseKey(event.key);
 		if (key && !this._ended) {
@@ -324,7 +340,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 					}
 					inaccuracy = (now - event.time)/preferences.playRate / this._inaccuracyTolerance;
 					const color = TyphmUtils.getRgbFromHue(2*Math.PI*inaccuracy);
-					this._beatmap.clearObject(event, color);
+					this._beatmap.clearNote(event, color);
 					this._unclearedEvents.splice(i, 1);
 					this._score += Math.round(1000*(Math.cos(Math.PI*inaccuracy)+1));
 					this._updateScore();
