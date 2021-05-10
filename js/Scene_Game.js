@@ -380,7 +380,7 @@ Scene_Game.prototype._updateCombo = function () {
 		this._center(comboIndicator, Graphics.height / 2);
 		this.addChild(comboIndicator);
 		comboIndicator.update = () => {
-			comboIndicator.opacity *= 0.95;
+			comboIndicator.opacity *= 0.95**(60/Graphics._fpsMeter.fps);
 			if (comboIndicator.opacity <= 5)
 				this.removeChild(comboIndicator);
 		};
@@ -407,7 +407,7 @@ Scene_Game.prototype._createInaccuracyIndicator = function (inaccuracy) {
 	inaccuracyIndicator.y = this._inaccuracyBar.y;
 	this.addChild(inaccuracyIndicator);
 	inaccuracyIndicator.update = () => {
-		inaccuracyIndicator.opacity -= 0.5;
+		inaccuracyIndicator.opacity -= 0.5*60/Graphics._fpsMeter.fps;
 		if (inaccuracyIndicator.opacity <= 0)
 			this.removeChild(inaccuracyIndicator);
 	};
@@ -422,7 +422,7 @@ Scene_Game.prototype._createHitEffect = function (event, color) {
 	hitEffect.y = this._line1.y - event.y;
 	this.addChild(hitEffect);
 	hitEffect.update = () => {
-		hitEffect.opacity *= 0.9;
+		hitEffect.opacity *= 0.9**(60/Graphics._fpsMeter.fps);
 		if (hitEffect.opacity <= 5)
 			this.removeChild(hitEffect);
 	};
@@ -438,7 +438,7 @@ Scene_Game.prototype._createWrongNote = function (key, time) {
 	wrongNote.y = this._line1.y - 100 + Math.random() * 200;
 	this.addChild(wrongNote);
 	wrongNote.update = () => {
-		wrongNote.opacity *= 0.9;
+		wrongNote.opacity *= 0.9**(60/Graphics._fpsMeter.fps);
 		if (wrongNote.opacity <= 5)
 			this.removeChild(wrongNote);
 	};
