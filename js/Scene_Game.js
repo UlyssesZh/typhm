@@ -316,7 +316,7 @@ Scene_Game.prototype._onKeydown = function (event) {
 			let hit = false;
 			for (let i = 0; i < this._unclearedEvents.length; i++) {
 				const event = this._unclearedEvents[i];
-				if (now <= event.time - this._inaccuracyTolerance)
+				if (now <= event.time - this._inaccuracyTolerance*preferences.playRate)
 					break;
 				else if (key === event.event) {
 					if (this._inaccuraciesArray) {
@@ -376,7 +376,7 @@ Scene_Game.prototype._now = function () {
 		if (this._paused)
 			return this._lastPos + preferences.offset;
 		else
-			return this._audioPlayer.seek()*1000 + preferences.offset;
+			return this._audioPlayer.seek()*1000 + preferences.offset*preferences.playRate;
 	} else {
 		return (performance.now() - this._starting) * preferences.playRate;
 	}
