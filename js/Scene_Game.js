@@ -148,6 +148,8 @@ Scene_Game.prototype.start = function () {
 	this._blurEventListener = this._onBlur.bind(this);
 	window.addEventListener('blur', this._blurEventListener);
 
+	this._resumingCountdown = null;
+
 	this._loadingFinished = false;
 	this._offsetWizard = false;
 	this._onLoad();
@@ -157,7 +159,7 @@ Scene_Game.prototype.start = function () {
 };
 
 Scene_Game.prototype.update = function () {
-	if (!this._paused && !this._ended) {
+	if (!this._resumingCountdown && !this._paused && !this._ended) {
 		const now = this._now();
 		this._progressIndicator.x = Graphics.width*Math.min((now-this._beatmap.start)/this._length,1);
 		this._judgeLine.x = this._getXFromTime(now);
@@ -294,6 +296,8 @@ Scene_Game.prototype._pause = function () {
 		this._paused = true;
 		this._setButtonsVisible(true);
 		this._activeEnding = true;
+		if (this._resumingCountdown)
+			this.removeChild(this._resumingCountdown);
 		if (this._hasMusic) {
 			this._audioPlayer.stop();
 			this._audioPlayer.addStopListener(this._onStop.bind(this));
@@ -306,15 +310,19 @@ Scene_Game.prototype._resume = function () {
 		return;
 	this._paused = false;
 	this._setButtonsVisible(false);
-	if (!this._ended) {
-		if (this._hasMusic) {
-			this._audioPlayer.play(false, this._lastPos/1000);
-			this._audioPlayer.pitch = preferences.playRate;
-		} else {
-			this._starting = performance.now() - this._lastPos/preferences.playRate;
-		}
-	}
+	if (!this._ended)
+		this._resumingCountdown = new Scene_Game.Sprite_ResumingCountdown(this);
 };
+
+Scene_Game.prototype.actualResume = function () {
+	this._resumingCountdown = null;
+	if (this._hasMusic) {
+		this._audioPlayer.play(false, this._lastPos/1000);
+		this._audioPlayer.pitch = preferences.playRate;
+	} else {
+		this._starting = performance.now() - this._lastPos/preferences.playRate;
+	}
+}
 
 Scene_Game.prototype._onKeydown = function (event) {
 	if (event.key ==='Escape') {
@@ -389,12 +397,17 @@ Scene_Game.prototype._updateCombo = function () {
 
 Scene_Game.prototype._now = function () {
 	if (this._hasMusic) {
-		if (this._paused)
+		if (this._resumingCountdown)
+			return this._lastPos;
+		else if (this._paused)
 			return this._lastPos + preferences.offset;
 		else
 			return this._audioPlayer.seek()*1000 + preferences.offset*preferences.playRate;
 	} else {
-		return (performance.now() - this._starting) * preferences.playRate;
+		if (this._resumingCountdown || this._paused)
+			return this._lastPos;
+		else
+			return (performance.now() - this._starting) * preferences.playRate;
 	}
 };
 
@@ -491,4 +504,38 @@ Scene_Game.prototype._finish = function () {
 	if (this._inaccuraciesArray)
 		preferences.offset -= this._inaccuraciesArray.reduce((a, b) => a + b) / this._inaccuraciesArray.length;
 	this._pause();
+};
+
+Scene_Game.Sprite_ResumingCountdown = function () {
+	this.initialize.apply(this, arguments);
+};
+
+Scene_Game.Sprite_ResumingCountdown.prototype = Object.create(Sprite.prototype);
+Scene_Game.Sprite_ResumingCountdown.prototype.constructor = Scene_Game.Sprite_ResumingCountdown;
+
+Scene_Game.Sprite_ResumingCountdown.prototype.initialize = function (scene) {
+	Sprite.prototype.initialize.call(this, new Bitmap(32, 32));
+	this.anchor.x = 1;
+	this.anchor.y = 0.5;
+	this.x = Graphics.width;
+	this.y = Graphics.height / 2;
+	this._countdown = 3;
+	this._lastCountdown = null;
+	this._scene = scene;
+	this._scene.addChild(this);
+};
+
+Scene_Game.Sprite_ResumingCountdown.prototype.update = function () {
+	const countdown = Math.ceil(this._countdown);
+	if (countdown === 0) {
+		this._scene.removeChild(this);
+		this._scene.actualResume();
+		return;
+	}
+	if (this._lastCountdown !== countdown) {
+		this.bitmap.clear();
+		this.bitmap.drawText(Math.ceil(this._countdown), 0, 0, 32, 32, 'right');
+		this._lastCountdown = countdown;
+	}
+	this._countdown -= 1 / Graphics._fpsMeter.fps;
 };
