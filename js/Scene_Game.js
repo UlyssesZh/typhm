@@ -436,7 +436,8 @@ Scene_Game.prototype._createHitEffect = function (event, color) {
 	hitEffect.anchor.x = 0.5;
 	hitEffect.anchor.y = 0.5;
 	hitEffect.x = event.x;
-	hitEffect.y = this._line1.y - event.y;
+	const line = this._line1Index === event.lineno ? this._line1 : this._line2;
+	hitEffect.y = line.y - event.y;
 	this.addChild(hitEffect);
 	hitEffect.update = () => {
 		hitEffect.opacity *= 0.9**(60/Graphics._fpsMeter.fps);
@@ -455,7 +456,7 @@ Scene_Game.prototype._createWrongNote = function (key, time) {
 	wrongNote.y = this._line1.y - 100 + Math.random() * 200;
 	this.addChild(wrongNote);
 	wrongNote.update = () => {
-		wrongNote.opacity *= 0.9**(60/Graphics._fpsMeter.fps);
+		wrongNote.opacity *= 0.98**(60/Graphics._fpsMeter.fps);
 		if (wrongNote.opacity <= 5)
 			this.removeChild(wrongNote);
 	};
