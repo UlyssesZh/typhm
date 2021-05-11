@@ -268,7 +268,6 @@ Scene_Game.prototype._onLoad = async function () {
 Scene_Game.prototype._postLoadingAudio = function () {
 	this._pauseButton.visible = true;
 	this._loading.visible = false;
-	this._judgeLine.visible = true;
 	this._line1.bitmap = this._beatmap.lines[this._line1Index];
 	this._line2.bitmap = this._beatmap.lines[this._line2Index];
 	this._setInaccuracyTolerance(TyphmConstants.DEFAULT_INACCURACY_TOLERANCE);
@@ -320,6 +319,7 @@ Scene_Game.prototype._resume = function () {
 
 Scene_Game.prototype.actualResume = function () {
 	this._resumingCountdown = null;
+	this._judgeLine.visible = true;
 	if (this._hasMusic) {
 		this._audioPlayer.play(false, this._lastPos/1000);
 		this._audioPlayer.pitch = preferences.playRate;
