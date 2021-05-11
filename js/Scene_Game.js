@@ -310,8 +310,12 @@ Scene_Game.prototype._resume = function () {
 		return;
 	this._paused = false;
 	this._setButtonsVisible(false);
-	if (!this._ended)
-		this._resumingCountdown = new Scene_Game.Sprite_ResumingCountdown(this);
+	if (!this._ended) {
+		if (preferences.countdown)
+			this._resumingCountdown = new Scene_Game.Sprite_ResumingCountdown(this);
+		else
+			this.actualResume();
+	}
 };
 
 Scene_Game.prototype.actualResume = function () {
